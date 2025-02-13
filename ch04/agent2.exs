@@ -31,3 +31,26 @@ MyCoolStack.pop()
 MyCoolStack.pop()
 
 MyCoolStack.stop()
+
+MyCoolStack.start()
+
+MyCoolStack |> Process.whereis() |> Process.info()
+
+Enum.each(1..10, &MyCoolStack.push(&1))
+
+:sys.get_state(MyCoolStack)
+:sys.get_status(MyCoolStack)
+
+MyCoolStack.stop()
+
+Process.list()
+|> Enum.max_by(fn pid ->
+  Process.info(pid, :total_heap_size)
+end)
+|> Process.info()
+
+Process.list()
+|> Enum.max_by(fn pid ->
+  Process.info(pid, :reductions)
+end)
+|> Process.info()
