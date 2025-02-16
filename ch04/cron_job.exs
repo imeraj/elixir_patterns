@@ -4,8 +4,8 @@ defmodule MyApp.CronJob do
   require Logger
 
   # Client API
-  def start_link(run_interval) do
-    GenServer.start_link(__MODULE__, run_interval, name: __MODULE__)
+  def start_link(run_interval_ms) do
+    GenServer.start_link(__MODULE__, run_interval_ms, name: __MODULE__)
   end
 
   # Server callbacks
