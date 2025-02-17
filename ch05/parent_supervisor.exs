@@ -20,3 +20,7 @@ end
 
 ParentSupervisor.start_link([])
 Supervisor.stop(ParentSupervisor)
+
+GenServer.stop(:gen_server_two, :brutal_kill)
+GenServer.stop(:gen_server_one, :brutal_kill)
+GenServer.stop(ChildSupervisor, :brutal_kill)
