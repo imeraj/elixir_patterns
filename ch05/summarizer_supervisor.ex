@@ -7,17 +7,28 @@ defmodule SummarizerSupervisor do
   end
 
   @impl Supervisor
-  def init(_init_args) do
+  def init(init_args) do
+    partitions = Keyword.fetch!(init_args, :partitions)
+
     children = [
-      {EventCollector, []},
-      {EventFlusher, [flush_interval: 1_000]}
+      {PartitionSupervisor,
+       child_spec: EventCollector.child_spec(init_args),
+       name: EventCollectorPartitionSupervisor,
+       partitions: partitions},
+      {PartitionSupervisor,
+       child_spec: EventFlusher.child_spec(init_args),
+       name: EventFlusherPartitionSupervisor,
+       partitions: partitions,
+       with_arguments: fn [opts], partition ->
+         [Keyword.put(opts, :partition, partition)]
+       end}
     ]
 
     Supervisor.init(children, strategy: :one_for_one)
   end
 end
 
-{:ok, pid} = SummarizerSupervisor.start_link([])
+{:ok, pid} = SummarizerSupervisor.start_link(flush_interval: 1000, partitions: 3)
 Supervisor.which_children(pid)
 
 test_users = [
@@ -25,7 +36,12 @@ test_users = [
   %User{id: "2", name: "Gundam", plan: :basic},
   %User{id: "3", name: "CoffeeCentral", plan: :free},
   %User{id: "4", name: "CodeTogether", plan: :enterprise},
-  %User{id: "5", name: "FPFunHouse", plan: :basic}
+  %User{id: "5", name: "FPFunHouse", plan: :basic},
+  %User{id: "6", name: "FPFunHouse", plan: :basic},
+  %User{id: "7", name: "FPFunHouse", plan: :basic},
+  %User{id: "8", name: "FPFunHouse", plan: :basic},
+  %User{id: "9", name: "FPFunHouse", plan: :basic},
+  %User{id: "10", name: "FPFunHouse", plan: :basic}
 ]
 
 1..100_000
@@ -37,3 +53,5 @@ test_users = [
   max_concurrency: 2000
 )
 |> Stream.run()
+
+Supervisor.stop(pid)
